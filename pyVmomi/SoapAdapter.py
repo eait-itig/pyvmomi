@@ -105,6 +105,7 @@ SOAP_ADAPTER_ARGS = [
    "server_side", "cert_reqs", "ssl_version", "ca_certs", "do_handshake_on_connect",
    "suppress_ragged_eofs", "ciphers"]
 
+INITIAL_COOKIE = ""
 
 ## Thumbprint mismatch exception
 #
@@ -1237,7 +1238,7 @@ class SoapStubAdapter(SoapStubAdapterBase):
       elif not version:
          version = 'vim.version.version1'
       SoapStubAdapterBase.__init__(self, version=version)
-      self.cookie = ""
+      self.cookie = INITIAL_COOKIE
       if sock:
          self.scheme = UnixSocketConnection
          # Store sock in the host member variable because that's where
@@ -1365,7 +1366,7 @@ class SoapStubAdapter(SoapStubAdapterBase):
       status = resp.status
 
       if cookie:
-         self.cookie = cookie
+         self.cookie = INITIAL_COOKIE + '; ' + cookie
       if status == 200 or status == 500:
          try:
             fd = resp

@@ -35,7 +35,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from pyVmomi import vim, vmodl, SoapStubAdapter, SessionOrientedStub
-from pyVmomi.SoapAdapter import CONNECTION_POOL_IDLE_TIMEOUT_SEC
+from pyVmomi.SoapAdapter import CONNECTION_POOL_IDLE_TIMEOUT_SEC, INITIAL_COOKIE
 from pyVmomi.VmomiSupport import nsMap, versionIdMap, versionMap, IsChildVersion
 from pyVmomi.VmomiSupport import GetServiceVersions
 
@@ -592,18 +592,22 @@ def __GetElementTree(protocol, server, port, path, sslContext, httpProxyHost=Non
    @type  sslContext: SSL.Context
    """
 
+   kwargs = {}
    if httpProxyHost:
-      kwargs = {"context": sslContext} if sslContext else {}
+      if sslContext:
+         kwards["context"] = sslContext
       conn = http_client.HTTPSConnection(httpProxyHost, port=httpProxyPort, **kwargs)
       conn.set_tunnel(server, port)
    elif protocol == "https":
-      kwargs = {"context": sslContext} if sslContext else {}
+      if sslContext:
+         kwards["context"] = sslContext
       conn = http_client.HTTPSConnection(server, port=port, **kwargs)
    elif protocol == "http":
       conn = http_client.HTTPConnection(server, port=port)
    else:
       raise Exception("Protocol " + protocol + " not supported.")
-   conn.request("GET", path)
+   kwargs['headers'] = {'cookie': INITIAL_COOKIE}
+   conn.request("GET", path, **kwargs)
    response = conn.getresponse()
    if response.status == 200:
       try:
